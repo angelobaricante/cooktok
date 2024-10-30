@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "559463641079",
+    "project_id": "cooktok-8c65a",
+    "storage_bucket": "cooktok-8c65a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:559463641079:android:4843d6b4682be2a7bf08f2",
+        "android_client_info": {
+          "package_name": "com.example.cooktok"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBC3PrdMgfqhUyxAd95xB4Re265-EZp5ko"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

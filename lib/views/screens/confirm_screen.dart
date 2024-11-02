@@ -11,10 +11,10 @@ class ConfirmScreen extends StatefulWidget {
   const ConfirmScreen({Key? key, required this.videoFile, required this.videoPath}) : super(key: key);
 
   @override
-  State<ConfirmScreen> createState() => _ConfirmScreen();
+  State<ConfirmScreen> createState() => _ConfirmScreenState();
 }
 
-class _ConfirmScreen extends State<ConfirmScreen> {
+class _ConfirmScreenState extends State<ConfirmScreen> {
   late VideoPlayerController controller;
   TextEditingController _songController = TextEditingController();
   TextEditingController _captionController = TextEditingController();

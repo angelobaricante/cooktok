@@ -8,7 +8,9 @@ import 'package:video_player/video_player.dart';
 class ConfirmScreen extends StatefulWidget {
   final File videoFile;
   final String videoPath;
-  const ConfirmScreen({Key? key, required this.videoFile, required this.videoPath}) : super(key: key);
+  const ConfirmScreen(
+      {Key? key, required this.videoFile, required this.videoPath})
+      : super(key: key);
 
   @override
   State<ConfirmScreen> createState() => _ConfirmScreenState();
@@ -19,7 +21,8 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
   TextEditingController _songController = TextEditingController();
   TextEditingController _captionController = TextEditingController();
 
-  UploadVideoController uploadVideoController = Get.put(UploadVideoController());
+  UploadVideoController uploadVideoController =
+      Get.put(UploadVideoController());
 
   @override
   void initState() {
@@ -31,6 +34,12 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
     controller.play();
     controller.setVolume(1);
     controller.setLooping(true);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    controller.dispose();
   }
 
   @override
@@ -71,9 +80,9 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
                 const SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: () => uploadVideoController.uploadVideo(
-                    _songController.text, 
-                    _captionController.text, 
-                    widget.videoPath),
+                      _songController.text,
+                      _captionController.text,
+                      widget.videoPath),
                   child: const Text(
                     'Share!',
                     style: TextStyle(fontSize: 20, color: Colors.white),

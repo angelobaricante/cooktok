@@ -1,5 +1,4 @@
 import 'package:cooktok/constants.dart';
-import 'package:cooktok/controllers/auth_controller.dart';
 import 'package:cooktok/controllers/video_controller.dart';
 import 'package:cooktok/views/screens/comment_screen.dart';
 import 'package:cooktok/views/widgets/circle_animation.dart';
@@ -185,8 +184,9 @@ class VideoScreen extends StatelessWidget {
                                     InkWell(
                                       onTap: () => Navigator.of(context).push(
                                         MaterialPageRoute(
-                                          builder: (context) =>
-                                              const CommentScreen(),
+                                          builder: (context) => CommentScreen(
+                                            id: data.id,
+                                          ),
                                         ),
                                       ),
                                       child: const Icon(

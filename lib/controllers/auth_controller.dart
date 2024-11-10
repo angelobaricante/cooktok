@@ -13,7 +13,7 @@ import 'package:image_picker/image_picker.dart';
 class AuthController extends GetxController {
   static AuthController instance = Get.find();
   late Rx<User?> _user;
-  late Rx<File?> _pickedImage;
+  late Rx<File?> _pickedImage = Rx<File?>(null);
 
   File? get profilePhoto => _pickedImage.value;
   User get user => _user.value!;
@@ -34,14 +34,17 @@ class AuthController extends GetxController {
     }
   }
 
-  void pickImage() async {
-    final pickedImage =
+  Future<String?> pickImage() async {
+    final pickedImageFile =
         await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedImage != null) {
+    if (pickedImageFile != null) {
+      _pickedImage.value = File(pickedImageFile.path);
       Get.snackbar('Profile Picture',
           'You have successfully selected your profile picture!');
+      return pickedImageFile
+          .path; // Return the file path for the selected image
     }
-    _pickedImage = Rx<File?>(File(pickedImage!.path));
+    return null; // Return null if no image was selected
   }
 
   // upload to firebase storage
@@ -57,7 +60,7 @@ class AuthController extends GetxController {
     return downloadUrl;
   }
 
-  //registering the user
+  // registering the user
   void registerUser(
       String username, String email, String password, File? image) async {
     try {
@@ -65,7 +68,7 @@ class AuthController extends GetxController {
           email.isNotEmpty &&
           password.isNotEmpty &&
           image != null) {
-        //save out user to our auth and firebase firestore
+        // Save our user to Firebase Auth and Firestore
         UserCredential cred = await firebaseAuth.createUserWithEmailAndPassword(
           email: email,
           password: password,
@@ -116,7 +119,7 @@ class AuthController extends GetxController {
     }
   }
 
-  signOut() async {
+  Future<void> signOut() async {
     await firebaseAuth.signOut();
   }
 }

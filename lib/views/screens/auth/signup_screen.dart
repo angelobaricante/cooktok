@@ -1,4 +1,5 @@
 import 'package:cooktok/views/widgets/text_input_field.dart';
+import 'package:cooktok/views/screens/auth/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:cooktok/constants.dart';
 
@@ -125,9 +126,7 @@ class SignupScreen extends StatelessWidget {
                   style: TextStyle(fontSize: 20),
                 ),
                 InkWell(
-                  onTap: () {
-                    print('navigating user');
-                  },
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => LoginScreen())),
                   child: Text(
                     'Login',
                     style: TextStyle(

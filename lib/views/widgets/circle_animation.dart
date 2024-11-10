@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 class CircleAnimation extends StatefulWidget {
   final Widget child;
   const CircleAnimation({
-    Key? key,
+    super.key,
     required this.child,
-  }) : super(key: key);
+  });
 
   @override
   State<CircleAnimation> createState() => _CircleAnimationState();
@@ -30,8 +30,8 @@ class _CircleAnimationState extends State<CircleAnimation>
 
   @override
   void dispose() {
-    super.dispose();
     controller.dispose();
+    super.dispose();
   }
 
   @override

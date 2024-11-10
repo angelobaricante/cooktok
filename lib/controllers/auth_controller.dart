@@ -115,4 +115,8 @@ class AuthController extends GetxController {
       );
     }
   }
+
+  signOut() async {
+    await firebaseAuth.signOut();
+  }
 }

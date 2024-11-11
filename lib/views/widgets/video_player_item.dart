@@ -9,7 +9,7 @@ class VideoPlayerItem extends StatefulWidget {
   });
 
   @override
-  _VideoPlayerItemState createState() => _VideoPlayerItemState();
+  State<VideoPlayerItem> createState() => _VideoPlayerItemState();
 }
 
 class _VideoPlayerItemState extends State<VideoPlayerItem> {
@@ -19,9 +19,13 @@ class _VideoPlayerItemState extends State<VideoPlayerItem> {
   void initState() {
     super.initState();
     videoPlayerController = VideoPlayerController.network(widget.videoUrl)
-      ..initialize().then((value) {
-        videoPlayerController.play();
-        videoPlayerController.setVolume(1);
+      ..initialize().then((_) {
+        setState(() {
+          // This forces a rebuild to update the UI when ready
+          videoPlayerController.play();
+          videoPlayerController.setVolume(1);
+          videoPlayerController.setLooping(true); // Loop the video if desired
+        });
       });
   }
 

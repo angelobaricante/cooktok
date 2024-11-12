@@ -36,4 +36,8 @@ class VideoController extends GetxController {
       });
     }
   }
+
+  List<Video> getUserVideos(String uid) {
+    return _videoList.value.where((video) => video.uid == uid).toList();
+  }
 }

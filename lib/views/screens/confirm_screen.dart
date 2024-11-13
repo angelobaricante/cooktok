@@ -19,6 +19,8 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
   late VideoPlayerController controller;
   final TextEditingController _songController = TextEditingController();
   final TextEditingController _captionController = TextEditingController();
+  final TextEditingController _recipeTitleController = TextEditingController();
+  final TextEditingController _recipeController = TextEditingController();
 
   UploadVideoController uploadVideoController = Get.put(UploadVideoController());
   bool _isLoading = false;
@@ -42,6 +44,7 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
     controller.dispose();
     _songController.dispose();
     _captionController.dispose();
+    _recipeController.dispose();
   }
 
   void _uploadVideo() async {
@@ -60,7 +63,6 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
         setState(() {
           _statusMessage = 'Video uploaded successfully!';
         });
-        // Show a success message
         Get.snackbar(
           'Success',
           'Video uploaded successfully!',
@@ -69,9 +71,8 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
           colorText: Colors.white,
           duration: Duration(seconds: 2),
         );
-        // Navigate back to the home screen after a short delay
         await Future.delayed(Duration(milliseconds: 300));
-        Get.offAll(() => HomeScreen()); // Navigate back to HomeScreen
+        Get.offAll(() => HomeScreen());
       }
     } catch (e) {
       print('Error uploading video: $e');
@@ -79,7 +80,6 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
         setState(() {
           _statusMessage = 'Failed to upload video: ${e.toString()}';
         });
-        // Show an error message
         Get.snackbar(
           'Error',
           'Failed to upload video. Please try again.',
@@ -139,6 +139,31 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
                         controller: _captionController,
                         labelText: 'Caption (Optional)',
                         icon: Icons.closed_caption,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 10),
+                      width: MediaQuery.of(context).size.width - 20,
+                      child: TextInputField(
+                        controller: _recipeTitleController,
+                        labelText: 'Recipe Title',
+                        icon: Icons.restaurant,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 10),
+                      width: MediaQuery.of(context).size.width - 20,
+                      child: TextField(
+                        controller: _recipeController,
+                        decoration: InputDecoration(
+                          labelText: 'Recipe',
+                          prefixIcon: Icon(Icons.restaurant_menu),
+                          border: OutlineInputBorder(),
+                        ),
+                        maxLines: null,
+                        keyboardType: TextInputType.multiline,
                       ),
                     ),
                     const SizedBox(height: 10),

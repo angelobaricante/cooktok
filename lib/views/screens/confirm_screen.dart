@@ -58,6 +58,8 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
         _songController.text,
         _captionController.text,
         widget.videoPath,
+        _recipeTitleController.text,
+        _recipeController.text
       );
       if (mounted) {
         setState(() {

@@ -5,10 +5,12 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get/get.dart';
 import 'package:video_compress/video_compress.dart';
 
-class UploadVideoController extends GetxController{
-
+class UploadVideoController extends GetxController {
   _compressVideo(String videoPath) async {
-    final compressVideo = await VideoCompress.compressVideo(videoPath, quality: VideoQuality.MediumQuality,);
+    final compressVideo = await VideoCompress.compressVideo(
+      videoPath,
+      quality: VideoQuality.MediumQuality,
+    );
     return compressVideo!.file;
   }
 
@@ -34,7 +36,7 @@ class UploadVideoController extends GetxController{
     return thumbnail;
   }
 
-  uploadVideo(String songName, String caption, String videoPath) async {
+  uploadVideo(String songName, String caption, String videoPath, String recipeTitle, String recipeContent) async {
     try {
       String uid = firebaseAuth.currentUser!.uid;
       DocumentSnapshot userDoc = await firestore.collection('users').doc(uid).get();
@@ -44,18 +46,20 @@ class UploadVideoController extends GetxController{
       String videoUrl = await _uploadVideoToStorage("Video $len", videoPath);
       String thumbnailUrl = await _uploadThumbnailToStorage("Video $len", videoPath);
 
-      Video video = Video(username: (
-      userDoc.data()! as Map<String, dynamic>)['name'], 
-      uid: uid, 
-      id: "Video $len", 
-      likes: [], 
-      commentCount: 0, 
-      shareCount: 0, 
-      songName: songName, 
-      caption: caption, 
-      videoUrl: videoUrl, 
-      profilePhoto: (userDoc.data()! as Map<String, dynamic>)['profilePhoto'], 
-      thumbnail: thumbnailUrl,
+      Video video = Video(
+        username: (userDoc.data()! as Map<String, dynamic>)['name'],
+        uid: uid,
+        id: "Video $len",
+        likes: [],
+        commentCount: 0,
+        shareCount: 0,
+        songName: songName,
+        caption: caption,
+        videoUrl: videoUrl,
+        profilePhoto: (userDoc.data()! as Map<String, dynamic>)['profilePhoto'],
+        thumbnail: thumbnailUrl,
+        recipeTitle: recipeTitle,
+        recipeContent: recipeContent,
       );
 
       await firestore.collection('videos').doc('Video $len').set(
@@ -63,7 +67,10 @@ class UploadVideoController extends GetxController{
       );
       Get.back();
     } catch (e) {
-      Get.snackbar('Error Uploading Video', e.toString(),);
+      Get.snackbar(
+        'Error Uploading Video',
+        e.toString(),
+      );
     }
   }
 }

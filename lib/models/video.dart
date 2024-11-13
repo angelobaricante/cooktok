@@ -12,6 +12,8 @@ class Video {
   String videoUrl;
   String thumbnail;
   String profilePhoto;
+  String recipeTitle;
+  String recipeContent;
 
   Video({
     required this.username,
@@ -23,14 +25,15 @@ class Video {
     required this.songName,
     required this.caption,
     required this.videoUrl,
-    required this.profilePhoto,
     required this.thumbnail,
+    required this.profilePhoto,
+    required this.recipeTitle,
+    required this.recipeContent,
   });
 
   Map<String, dynamic> toJson() => {
     "username": username,
     "uid": uid,
-    "profilePhoto": profilePhoto,
     "id": id,
     "likes": likes,
     "commentCount": commentCount,
@@ -39,23 +42,27 @@ class Video {
     "caption": caption,
     "videoUrl": videoUrl,
     "thumbnail": thumbnail,
+    "profilePhoto": profilePhoto,
+    "recipeTitle": recipeTitle,
+    "recipeContent": recipeContent,
   };
 
   static Video fromSnap(DocumentSnapshot snap) {
     var snapshot = snap.data() as Map<String, dynamic>;
-
     return Video(
-      username: snapshot['username'], 
-      uid: snapshot['uid'], 
-      id: snapshot['id'], 
-      likes: snapshot['likes'], 
-      commentCount: snapshot['commentCount'], 
-      shareCount: snapshot['shareCount'], 
-      songName: snapshot['songName'], 
-      caption: snapshot['caption'], 
-      videoUrl: snapshot['videoUrl'], 
-      profilePhoto: snapshot['profilePhoto'], 
-      thumbnail: snapshot['thumbnail']
-      );
+      username: snapshot['username'] ?? '',
+      uid: snapshot['uid'] ?? '',
+      id: snapshot['id'] ?? '',
+      likes: snapshot['likes'] ?? [],
+      commentCount: snapshot['commentCount'] ?? 0,
+      shareCount: snapshot['shareCount'] ?? 0,
+      songName: snapshot['songName'] ?? '',
+      caption: snapshot['caption'] ?? '',
+      videoUrl: snapshot['videoUrl'] ?? '',
+      profilePhoto: snapshot['profilePhoto'] ?? '',
+      thumbnail: snapshot['thumbnail'] ?? '',
+      recipeTitle: snapshot['recipeTitle'] ?? '',
+      recipeContent: snapshot['recipeContent'] ?? '',
+    );
   }
 }

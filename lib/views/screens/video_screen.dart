@@ -1,9 +1,6 @@
-import 'package:cooktok/constants.dart';
 import 'package:cooktok/controllers/video_controller.dart';
-import 'package:cooktok/views/screens/comment_screen.dart';
-import 'package:cooktok/views/screens/profile_screen.dart';
-import 'package:cooktok/views/widgets/circle_animation.dart';
 import 'package:cooktok/views/widgets/video_player_item.dart';
+import 'package:cooktok/views/screens/video_screen_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -11,77 +8,6 @@ class VideoScreen extends StatelessWidget {
   VideoScreen({super.key});
 
   final VideoController videoController = Get.put(VideoController());
-
-  buildProfile(String profilePhoto, String userId, BuildContext context) {
-    return InkWell(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => ProfileScreen(uid: userId),
-          ),
-        );
-      },
-      child: SizedBox(
-        width: 60,
-        height: 60,
-        child: Stack(
-          children: [
-            Positioned(
-              left: 5,
-              child: Container(
-                width: 50,
-                height: 50,
-                padding: const EdgeInsets.all(1),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(25),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(25),
-                  child: Image(
-                    image: NetworkImage(profilePhoto),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  buildMusicAlbum(String profilePhoto) {
-    return SizedBox(
-      width: 60,
-      height: 60,
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(11),
-            height: 50,
-            width: 50,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [
-                  Colors.grey,
-                  Colors.white,
-                ],
-              ),
-              borderRadius: BorderRadius.circular(25),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(25),
-              child: Image(
-                image: NetworkImage(profilePhoto),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -159,85 +85,13 @@ class VideoScreen extends StatelessWidget {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                // Pass `data.userId` to buildProfile for navigation
-                                buildProfile(
+                                VideoScreenUtils.buildProfile(
                                   data.profilePhoto,
                                   data.uid,
                                   context,
                                 ),
-                                Column(
-                                  children: [
-                                    InkWell(
-                                      onTap: () =>
-                                          videoController.likeVideo(data.id),
-                                      child: Icon(
-                                        Icons.favorite,
-                                        size: 40,
-                                        color: data.likes.contains(
-                                                authController.user.uid)
-                                            ? Colors.red
-                                            : Colors.white,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 7),
-                                    Text(
-                                      data.likes.length.toString(),
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  children: [
-                                    InkWell(
-                                      onTap: () => Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (context) => CommentScreen(
-                                            id: data.id,
-                                          ),
-                                        ),
-                                      ),
-                                      child: const Icon(
-                                        Icons.comment,
-                                        size: 40,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 7),
-                                    Text(
-                                      data.commentCount.toString(),
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Column(
-                                  children: [
-                                    InkWell(
-                                      onTap: () {},
-                                      child: const Icon(
-                                        Icons.reply,
-                                        size: 40,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 7),
-                                    Text(
-                                      data.shareCount.toString(),
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                CircleAnimation(
-                                  child: buildMusicAlbum(data.profilePhoto),
-                                ),
+                                VideoScreenUtils.buildVideoActions(
+                                    data, videoController, context),
                               ],
                             ),
                           ),

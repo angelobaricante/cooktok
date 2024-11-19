@@ -4,10 +4,17 @@ import 'package:get/get.dart';
 
 class ProfileController extends GetxController {
   final Rx<Map<String, dynamic>> user = Rx<Map<String, dynamic>>({});
+  final RxList<Map<String, dynamic>> savedRecipes =
+      <Map<String, dynamic>>[].obs;
   Map<String, dynamic> get getUser => user.value;
 
   Rx<String> uid = "".obs;
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  final String _userId =
+      'someUserId'; // Replace with actual logic to get userId
+
+  String get currentUserId => _userId;
 
   updateUserId(String id) {
     uid.value = id;
@@ -122,5 +129,73 @@ class ProfileController extends GetxController {
 
   List<String> getUserVideos() {
     return user.value['videoUrls'] ?? [];
+  }
+
+  void saveRecipe(
+      String recipeId, String recipeTitle, String recipeContent) async {
+    final currentUserId = authController.user.uid;
+    final recipeDoc = firestore
+        .collection('users')
+        .doc(currentUserId)
+        .collection('savedRecipes')
+        .doc(recipeId);
+
+    print('Saving recipe for user: $currentUserId, recipeId: $recipeId');
+
+    var doc = await recipeDoc.get();
+    if (!doc.exists) {
+      await recipeDoc.set({
+        'savedAt': FieldValue.serverTimestamp(),
+        'recipeTitle': recipeTitle,
+        'recipeContent': recipeContent,
+        'recipeId': recipeId,
+      });
+      print('Recipe saved successfully');
+      fetchSavedRecipes();
+    } else {
+      print('Recipe already saved');
+    }
+  }
+
+  void fetchSavedRecipes() async {
+    try {
+      final currentUserId = authController.user.uid;
+      print('Fetching saved recipes for user: $currentUserId');
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserId)
+          .collection('savedRecipes')
+          .get();
+
+      savedRecipes.assignAll(snapshot.docs.map((doc) => doc.data()).toList());
+
+      // Extract and print recipeTitle and recipeContent
+      for (var recipe in savedRecipes) {
+        final recipeTitle = recipe['recipeTitle'] ?? 'No Title';
+        final recipeContent = recipe['recipeContent'] ?? 'No Content';
+        print('Recipe Title: $recipeTitle, Recipe Content: $recipeContent');
+      }
+    } catch (e) {
+      print('Error fetching saved recipes: $e');
+    }
+  }
+
+  bool isRecipeSaved(String recipeId) {
+    return savedRecipes.any((recipe) => recipe['recipeId'] == recipeId);
+  }
+
+  void removeRecipe(String recipeId) async {
+    final currentUserId = authController.user.uid;
+    final recipeDoc = firestore
+        .collection('users')
+        .doc(currentUserId)
+        .collection('savedRecipes')
+        .doc(recipeId);
+
+    print('Removing recipe for user: $currentUserId, recipeId: $recipeId');
+
+    await recipeDoc.delete();
+    print('Recipe removed successfully');
+    fetchSavedRecipes();
   }
 }

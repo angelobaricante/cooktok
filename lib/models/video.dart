@@ -14,6 +14,7 @@ class Video {
   String profilePhoto;
   String recipeTitle;
   String recipeContent;
+  String recipeId;
 
   Video({
     required this.username,
@@ -29,26 +30,29 @@ class Video {
     required this.profilePhoto,
     required this.recipeTitle,
     required this.recipeContent,
+    required this.recipeId,
   });
 
   Map<String, dynamic> toJson() => {
-    "username": username,
-    "uid": uid,
-    "id": id,
-    "likes": likes,
-    "commentCount": commentCount,
-    "shareCount": shareCount,
-    "songName": songName,
-    "caption": caption,
-    "videoUrl": videoUrl,
-    "thumbnail": thumbnail,
-    "profilePhoto": profilePhoto,
-    "recipeTitle": recipeTitle,
-    "recipeContent": recipeContent,
-  };
+        "username": username,
+        "uid": uid,
+        "id": id,
+        "likes": likes,
+        "commentCount": commentCount,
+        "shareCount": shareCount,
+        "songName": songName,
+        "caption": caption,
+        "videoUrl": videoUrl,
+        "thumbnail": thumbnail,
+        "profilePhoto": profilePhoto,
+        "recipeTitle": recipeTitle,
+        "recipeContent": recipeContent,
+        "recipeId": recipeId,
+      };
 
   static Video fromSnap(DocumentSnapshot snap) {
     var snapshot = snap.data() as Map<String, dynamic>;
+    print('Fetched video data: $snapshot'); // Debugging line
     return Video(
       username: snapshot['username'] ?? '',
       uid: snapshot['uid'] ?? '',
@@ -63,6 +67,7 @@ class Video {
       thumbnail: snapshot['thumbnail'] ?? '',
       recipeTitle: snapshot['recipeTitle'] ?? '',
       recipeContent: snapshot['recipeContent'] ?? '',
+      recipeId: snapshot['recipeId'] ?? '',
     );
   }
 }

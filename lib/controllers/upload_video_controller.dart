@@ -36,15 +36,18 @@ class UploadVideoController extends GetxController {
     return thumbnail;
   }
 
-  uploadVideo(String songName, String caption, String videoPath, String recipeTitle, String recipeContent) async {
+  uploadVideo(String songName, String caption, String videoPath,
+      String recipeTitle, String recipeContent, String recipeId) async {
     try {
       String uid = firebaseAuth.currentUser!.uid;
-      DocumentSnapshot userDoc = await firestore.collection('users').doc(uid).get();
+      DocumentSnapshot userDoc =
+          await firestore.collection('users').doc(uid).get();
       var allDocs = await firestore.collection('videos').get();
       int len = allDocs.docs.length;
 
       String videoUrl = await _uploadVideoToStorage("Video $len", videoPath);
-      String thumbnailUrl = await _uploadThumbnailToStorage("Video $len", videoPath);
+      String thumbnailUrl =
+          await _uploadThumbnailToStorage("Video $len", videoPath);
 
       Video video = Video(
         username: (userDoc.data()! as Map<String, dynamic>)['name'],
@@ -60,11 +63,12 @@ class UploadVideoController extends GetxController {
         thumbnail: thumbnailUrl,
         recipeTitle: recipeTitle,
         recipeContent: recipeContent,
+        recipeId: recipeId,
       );
 
       await firestore.collection('videos').doc('Video $len').set(
-        video.toJson(),
-      );
+            video.toJson(),
+          );
       Get.back();
     } catch (e) {
       Get.snackbar(

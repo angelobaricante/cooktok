@@ -5,11 +5,19 @@ import 'package:cooktok/views/widgets/text_input_field.dart';
 import 'package:get/get.dart';
 import 'package:video_player/video_player.dart';
 import 'package:cooktok/views/screens/home_screen.dart';
+import 'package:uuid/uuid.dart';
+
+// Initialize the UUID generator
+var uuid = const Uuid();
 
 class ConfirmScreen extends StatefulWidget {
   final File videoFile;
   final String videoPath;
-  const ConfirmScreen({Key? key, required this.videoFile, required this.videoPath}) : super(key: key);
+  const ConfirmScreen({
+    super.key,
+    required this.videoFile,
+    required this.videoPath,
+  });
 
   @override
   State<ConfirmScreen> createState() => _ConfirmScreenState();
@@ -21,14 +29,23 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
   final TextEditingController _captionController = TextEditingController();
   final TextEditingController _recipeTitleController = TextEditingController();
   final TextEditingController _recipeController = TextEditingController();
+  final TextEditingController _recipeIdController = TextEditingController();
 
-  UploadVideoController uploadVideoController = Get.put(UploadVideoController());
+  UploadVideoController uploadVideoController =
+      Get.put(UploadVideoController());
   bool _isLoading = false;
   String _statusMessage = '';
+
+  void generateRecipeId() {
+    String generatedId = uuid.v4();
+    _recipeIdController.text = generatedId;
+    print('Generated Recipe ID: $generatedId');
+  }
 
   @override
   void initState() {
     super.initState();
+    generateRecipeId();
     setState(() {
       controller = VideoPlayerController.file(widget.videoFile);
     });
@@ -45,6 +62,7 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
     _songController.dispose();
     _captionController.dispose();
     _recipeController.dispose();
+    _recipeIdController.dispose();
   }
 
   void _uploadVideo() async {
@@ -53,13 +71,17 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
       _statusMessage = '';
     });
 
+    // Add the print statement here
+    print('Recipe ID before upload: ${_recipeIdController.text}');
+
     try {
       await uploadVideoController.uploadVideo(
         _songController.text,
         _captionController.text,
         widget.videoPath,
         _recipeTitleController.text,
-        _recipeController.text
+        _recipeController.text,
+        _recipeIdController.text,
       );
       if (mounted) {
         setState(() {
@@ -71,10 +93,10 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
           snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.green,
           colorText: Colors.white,
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 2),
         );
-        await Future.delayed(Duration(milliseconds: 300));
-        Get.offAll(() => HomeScreen());
+        await Future.delayed(const Duration(milliseconds: 300));
+        Get.offAll(() => const HomeScreen());
       }
     } catch (e) {
       print('Error uploading video: $e');
@@ -103,9 +125,9 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Confirm Video'),
+        title: const Text('Confirm Video'),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Get.back(),
         ),
       ),
@@ -159,7 +181,7 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
                       width: MediaQuery.of(context).size.width - 20,
                       child: TextField(
                         controller: _recipeController,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Recipe',
                           prefixIcon: Icon(Icons.restaurant_menu),
                           border: OutlineInputBorder(),
@@ -175,7 +197,9 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
                         child: Text(
                           _statusMessage,
                           style: TextStyle(
-                            color: _statusMessage.contains('Failed') ? Colors.red : Colors.green,
+                            color: _statusMessage.contains('Failed')
+                                ? Colors.red
+                                : Colors.green,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -185,9 +209,10 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
                       onPressed: _isLoading ? null : _uploadVideo,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
-                        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
                       ),
-                      child: Text(
+                      child: const Text(
                         'Upload!',
                         style: TextStyle(fontSize: 20, color: Colors.white),
                       ),
@@ -200,7 +225,7 @@ class _ConfirmScreenState extends State<ConfirmScreen> {
           if (_isLoading)
             Container(
               color: Colors.black54,
-              child: Center(
+              child: const Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [

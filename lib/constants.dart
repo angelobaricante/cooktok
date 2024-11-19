@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cooktok/controllers/auth_controller.dart';
 import 'package:cooktok/views/screens/add_video_screen.dart';
 import 'package:cooktok/views/screens/profile_screen.dart';
+import 'package:cooktok/views/screens/save_recipe_screen.dart';
 import 'package:cooktok/views/screens/search_screen.dart';
 import 'package:cooktok/views/screens/video_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,7 +13,7 @@ List pages = [
   VideoScreen(),
   SearchScreen(),
   const AddVideoScreen(),
-  Text('Messages Screen'),
+  const SavedRecipesScreen(),
   ProfileScreen(uid: authController.user.uid),
 ];
 

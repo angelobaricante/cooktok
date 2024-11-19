@@ -1,4 +1,5 @@
 import 'package:cooktok/controllers/auth_controller.dart';
+import 'package:cooktok/controllers/profile_controller.dart';
 import 'package:cooktok/views/screens/auth/login_screen.dart';
 import 'package:cooktok/views/screens/auth/signup_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -10,7 +11,10 @@ import 'package:get/get_navigation/src/root/get_material_app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp().then((value) => {Get.put(AuthController())});
+  await Firebase.initializeApp().then((value) {
+    Get.put(AuthController());
+    Get.put(ProfileController());
+  });
   runApp(const MyApp());
 }
 

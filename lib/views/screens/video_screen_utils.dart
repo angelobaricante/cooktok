@@ -153,12 +153,16 @@ class VideoScreenUtils {
       children: [
         InkWell(
           onTap: () {
+            // Add the print statement here
+            print('Recipe ID: ${data.recipeId}');
+
             showDialog(
               context: context,
               builder: (BuildContext context) {
                 return RecipeScreen(
                   recipeTitle: data.recipeTitle,
                   recipeContent: data.recipeContent,
+                  recipeId: data.recipeId,
                 );
               },
             );
@@ -170,9 +174,9 @@ class VideoScreenUtils {
           ),
         ),
         const SizedBox(height: 7),
-        Text(
+        const Text(
           'Recipe',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             color: Colors.white,
           ),

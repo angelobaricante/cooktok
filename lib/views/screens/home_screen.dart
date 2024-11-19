@@ -30,23 +30,23 @@ class _HomeScreenState extends State<HomeScreen> {
           BottomNavigationBarItem(
             icon: Icon(Icons.home, size: 30),
             label: 'Home',
-            ),
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.search, size: 30),
             label: 'Search',
-            ),
+          ),
           BottomNavigationBarItem(
             icon: CustomIcon(),
             label: '',
-            ),
+          ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.message, size: 30),
-            label: 'Message',
-            ),
+            icon: Icon(Icons.bookmark, size: 30),
+            label: 'Save Recipe',
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person, size: 30),
             label: 'Profile',
-            ),
+          ),
         ],
       ),
       body: pages[pageIdx],

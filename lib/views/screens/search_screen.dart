@@ -7,7 +7,8 @@ import 'package:cooktok/views/screens/profile_screen.dart'; // Add this import
 class SearchScreen extends StatelessWidget {
   SearchScreen({Key? key}) : super(key: key);
 
-  final custom.SearchController searchController = Get.put(custom.SearchController());
+  final custom.SearchController searchController =
+      Get.put(custom.SearchController());
 
   @override
   Widget build(BuildContext context) {
@@ -21,14 +22,18 @@ class SearchScreen extends StatelessWidget {
               hintText: 'Search',
               hintStyle: TextStyle(fontSize: 18, color: Colors.white),
             ),
-            onChanged: (value) => searchController.searchUser(value), // Trigger live search
+            onChanged: (value) =>
+                searchController.searchUser(value), // Trigger live search
           ),
         ),
         body: searchController.searchedUsers.isEmpty
             ? const Center(
                 child: Text(
                   'Search for users!',
-                  style: TextStyle(fontSize: 25, color: Colors.white, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      fontSize: 25,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold),
                 ),
               )
             : ListView.builder(
@@ -47,7 +52,8 @@ class SearchScreen extends StatelessWidget {
                       ),
                       title: Text(
                         user.name,
-                        style: const TextStyle(fontSize: 18, color: Colors.white),
+                        style:
+                            const TextStyle(fontSize: 18, color: Colors.white),
                       ),
                     ),
                   );

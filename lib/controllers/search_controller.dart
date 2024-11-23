@@ -1,30 +1,45 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cooktok/constants.dart';
-import 'package:cooktok/models/user.dart';
 import 'package:get/get.dart';
 
 class SearchController extends GetxController {
-  final Rx<List<User>> _searchedUsers = Rx<List<User>>([]);
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final Rx<List<Map<String, dynamic>>> _searchedVideos = Rx<List<Map<String, dynamic>>>([]);
+  final Rx<List<Map<String, dynamic>>> _searchedUsers = Rx<List<Map<String, dynamic>>>([]);
 
-  List<User> get searchedUsers => _searchedUsers.value;
+  List<Map<String, dynamic>> get searchedVideos => _searchedVideos.value;
+  List<Map<String, dynamic>> get searchedUsers => _searchedUsers.value;
 
-  void searchUser(String typedUser) {
-    if (typedUser.isEmpty) {
+  void search(String query) async {
+    if (query.isEmpty) {
       _searchedUsers.value = [];
+      _searchedVideos.value = [];
       return;
     }
 
-    String searchKey = typedUser.toLowerCase();
+    final searchKey = query.toLowerCase();
 
-    firestore.collection('users').snapshots().listen((QuerySnapshot query) {
-      List<User> retVal = [];
-      for (var elem in query.docs) {
-        User user = User.fromSnap(elem);
-        if (user.name.toLowerCase().contains(searchKey)) {
-          retVal.add(user);
+    // Fetch users
+    firestore.collection('users').get().then((querySnapshot) {
+      List<Map<String, dynamic>> matchedUsers = [];
+      for (var doc in querySnapshot.docs) {
+        var userData = doc.data();
+        if (userData['name']?.toLowerCase().contains(searchKey) ?? false) {
+          matchedUsers.add(userData);
         }
       }
-      _searchedUsers.value = retVal;
+      _searchedUsers.value = matchedUsers;
+    });
+
+    // Fetch videos
+    firestore.collection('videos').get().then((querySnapshot) {
+      List<Map<String, dynamic>> matchedVideos = [];
+      for (var doc in querySnapshot.docs) {
+        var videoData = doc.data();
+        if (videoData['recipeTitle']?.toLowerCase().contains(searchKey) ?? false) {
+          matchedVideos.add(videoData);
+        }
+      }
+      _searchedVideos.value = matchedVideos;
     });
   }
 }

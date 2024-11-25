@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cooktok/constants.dart';
 import 'package:cooktok/models/video.dart';
 import 'package:get/get.dart';
@@ -39,5 +40,36 @@ class VideoController extends GetxController {
 
   List<Video> getUserVideos(String uid) {
     return _videoList.value.where((video) => video.uid == uid).toList();
+  }
+
+  Future<void> deleteVideo(String videoId) async {
+    try {
+      // Get the video document
+      DocumentSnapshot videoDoc =
+          await firestore.collection('videos').doc(videoId).get();
+
+      if (!videoDoc.exists) {
+        throw 'Video document not found';
+      }
+
+      // Get the video URL from the document
+      String videoUrl = (videoDoc.data() as Map<String, dynamic>)['videoUrl'];
+
+      // Delete the video file from Firebase Storage
+      Reference storageRef = FirebaseStorage.instance.refFromURL(videoUrl);
+      await storageRef.delete();
+
+      // Delete the video document from Firestore
+      await firestore.collection('videos').doc(videoId).delete();
+
+      // Remove the video from the local list
+      _videoList.update((val) {
+        val?.removeWhere((video) => video.id == videoId);
+      });
+
+      Get.snackbar('Success', 'Video deleted successfully');
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to delete video: $e');
+    }
   }
 }

@@ -11,14 +11,16 @@ class ProfileController extends GetxController {
   Rx<String> uid = "".obs;
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-  final String _userId =
-      'someUserId'; // Replace with actual logic to get userId
-
-  String get currentUserId => _userId;
+  @override
+  void onInit() {
+    super.onInit();
+    uid.listen((_) {
+      getUserData();
+    });
+  }
 
   updateUserId(String id) {
     uid.value = id;
-    getUserData();
   }
 
   getUserData() async {
@@ -169,7 +171,6 @@ class ProfileController extends GetxController {
 
       savedRecipes.assignAll(snapshot.docs.map((doc) => doc.data()).toList());
 
-      // Extract and print recipeTitle and recipeContent
       for (var recipe in savedRecipes) {
         final recipeTitle = recipe['recipeTitle'] ?? 'No Title';
         final recipeContent = recipe['recipeContent'] ?? 'No Content';

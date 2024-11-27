@@ -48,6 +48,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  void _showFullScreenProfileImage(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            ClipOval(
+              child: CachedNetworkImage(
+                imageUrl: imageUrl,
+                fit: BoxFit.cover,
+                width: MediaQuery.of(context).size.width * 0.8,
+                height: MediaQuery.of(context).size.width * 0.8,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
@@ -85,16 +107,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    ClipOval(
-                      child: CachedNetworkImage(
-                        fit: BoxFit.cover,
-                        imageUrl: profileController.user.value['profilePhoto'],
-                        height: 100,
-                        width: 100,
-                        placeholder: (context, url) =>
-                            const CircularProgressIndicator(),
-                        errorWidget: (context, url, error) =>
-                            const Icon(Icons.error),
+                    InkWell(
+                      onTap: () {
+                        _showFullScreenProfileImage(
+                          context,
+                          profileController.user.value['profilePhoto'],
+                        );
+                      },
+                      child: ClipOval(
+                        child: CachedNetworkImage(
+                          fit: BoxFit.cover,
+                          imageUrl: profileController.user.value['profilePhoto'],
+                          height: 100,
+                          width: 100,
+                          placeholder: (context, url) =>
+                              const CircularProgressIndicator(),
+                          errorWidget: (context, url, error) =>
+                              const Icon(Icons.error),
+                        ),
                       ),
                     ),
                   ],

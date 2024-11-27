@@ -14,25 +14,34 @@ class VideoPlayerItem extends StatefulWidget {
 
 class _VideoPlayerItemState extends State<VideoPlayerItem> {
   late VideoPlayerController videoPlayerController;
+  bool _isPlaying = true;
 
   @override
   void initState() {
     super.initState();
     videoPlayerController = VideoPlayerController.network(widget.videoUrl)
       ..initialize().then((_) {
-        setState(() {
-          // This forces a rebuild to update the UI when ready
-          videoPlayerController.play();
-          videoPlayerController.setVolume(1);
-          videoPlayerController.setLooping(true); // Loop the video if desired
-        });
+        setState(() {});
+        videoPlayerController.play();
       });
+    videoPlayerController.setLooping(true);
+  }
+
+  void _togglePlayPause() {
+    setState(() {
+      if (_isPlaying) {
+        videoPlayerController.pause();
+      } else {
+        videoPlayerController.play();
+      }
+      _isPlaying = !_isPlaying;
+    });
   }
 
   @override
   void dispose() {
-    super.dispose();
     videoPlayerController.dispose();
+    super.dispose();
   }
 
   @override
@@ -45,7 +54,31 @@ class _VideoPlayerItemState extends State<VideoPlayerItem> {
       decoration: const BoxDecoration(
         color: Colors.black,
       ),
-      child: VideoPlayer(videoPlayerController),
+      child: videoPlayerController.value.isInitialized
+          ? GestureDetector(
+              onTap: _togglePlayPause,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  VideoPlayer(videoPlayerController),
+                  if (!_isPlaying)
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.5),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.play_arrow,
+                        color: Colors.white,
+                        size: 50.0,
+                      ),
+                    ),
+                ],
+              ),
+            )
+          : const Center(
+              child: CircularProgressIndicator(),
+            ),
     );
   }
 }

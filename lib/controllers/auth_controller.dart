@@ -3,12 +3,12 @@ import 'package:cooktok/constants.dart';
 import 'package:cooktok/views/screens/auth/login_screen.dart';
 import 'package:cooktok/views/screens/home_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cooktok/models/user.dart' as model;
 import 'package:image_picker/image_picker.dart';
+import 'package:cooktok/controllers/profile_controller.dart';
 
 class AuthController extends GetxController {
   static AuthController instance = Get.find();
@@ -31,6 +31,8 @@ class AuthController extends GetxController {
       Get.offAll(() => LoginScreen());
     } else {
       Get.offAll(() => const HomeScreen());
+      // Update the profile controller with the new user ID
+      Get.find<ProfileController>().updateUserId(user.uid);
     }
   }
 
@@ -41,13 +43,11 @@ class AuthController extends GetxController {
       _pickedImage.value = File(pickedImageFile.path);
       Get.snackbar('Profile Picture',
           'You have successfully selected your profile picture!');
-      return pickedImageFile
-          .path; // Return the file path for the selected image
+      return pickedImageFile.path;
     }
-    return null; // Return null if no image was selected
+    return null;
   }
 
-  // upload to firebase storage
   Future<String> _uploadToStorage(File image) async {
     Reference ref = firebaseStorage
         .ref()
@@ -60,7 +60,6 @@ class AuthController extends GetxController {
     return downloadUrl;
   }
 
-  // registering the user
   void registerUser(
       String username, String email, String password, File? image) async {
     try {
@@ -68,7 +67,6 @@ class AuthController extends GetxController {
           email.isNotEmpty &&
           password.isNotEmpty &&
           image != null) {
-        // Save our user to Firebase Auth and Firestore
         UserCredential cred = await firebaseAuth.createUserWithEmailAndPassword(
           email: email,
           password: password,
@@ -121,5 +119,7 @@ class AuthController extends GetxController {
 
   Future<void> signOut() async {
     await firebaseAuth.signOut();
+    // Reset the profile controller
+    Get.find<ProfileController>().resetProfile();
   }
 }

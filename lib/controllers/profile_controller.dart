@@ -23,7 +23,19 @@ class ProfileController extends GetxController {
     uid.value = id;
   }
 
+  void refreshProfile() {
+    updateUserId(authController.user.uid);
+  }
+
+  resetProfile() {
+    user.value = {};
+    savedRecipes.clear();
+    uid.value = "";
+  }
+
   getUserData() async {
+    if (uid.value.isEmpty) return;
+
     List<String> thumbnails = [];
     List<String> videoUrls = [];
 

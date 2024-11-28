@@ -8,8 +8,9 @@ import 'package:cooktok/views/screens/video_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
-List pages = [
+List<Widget> pages = [
   VideoScreen(),
   SearchScreen(),
   const AddVideoScreen(),
@@ -29,3 +30,8 @@ var firestore = FirebaseFirestore.instance;
 
 // CONTROLLER
 var authController = AuthController.instance;
+
+// Function to get the current user's profile screen
+Widget getCurrentUserProfileScreen() {
+  return ProfileScreen(uid: Get.find<AuthController>().user.uid);
+}

@@ -1,4 +1,3 @@
-
 import 'package:cooktok/controllers/auth_controller.dart';
 import 'package:cooktok/controllers/profile_controller.dart';
 import 'package:cooktok/views/screens/auth/login_screen.dart';

@@ -26,7 +26,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
-    profileController = Get.put(ProfileController());
+    profileController = Get.find<ProfileController>();
     _initVideoController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       profileController.updateUserId(widget.uid);
@@ -117,7 +117,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: ClipOval(
                         child: CachedNetworkImage(
                           fit: BoxFit.cover,
-                          imageUrl: profileController.user.value['profilePhoto'],
+                          imageUrl:
+                              profileController.user.value['profilePhoto'],
                           height: 100,
                           width: 100,
                           placeholder: (context, url) =>

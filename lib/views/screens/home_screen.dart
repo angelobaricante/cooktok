@@ -49,7 +49,16 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: pages[pageIdx],
+      body: _getPage(pageIdx),
     );
+  }
+
+  Widget _getPage(int index) {
+    if (index == 4) {
+      // Profile page
+      return getCurrentUserProfileScreen();
+    } else {
+      return pages[index];
+    }
   }
 }

@@ -1,32 +1,28 @@
-import 'package:cooktok/constants.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cooktok/controllers/auth_controller.dart';
 import 'package:cooktok/controllers/profile_controller.dart';
 import 'package:cooktok/controllers/video_controller.dart';
 import 'package:cooktok/views/screens/user_video_screen.dart';
-import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:get/get.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String uid;
-  final bool showBackButton;
-  const ProfileScreen({
-    Key? key,
-    required this.uid,
-    this.showBackButton = false,
-  }) : super(key: key);
+  const ProfileScreen({Key? key, required this.uid}) : super(key: key);
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final AuthController authController = Get.find<AuthController>();
   late final ProfileController profileController;
   late final VideoController videoController;
 
   @override
   void initState() {
     super.initState();
-    profileController = Get.find<ProfileController>();
+    profileController = Get.put(ProfileController());
     _initVideoController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       profileController.updateUserId(widget.uid);
@@ -40,31 +36,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     videoController = Get.find<VideoController>();
   }
 
-  @override
-  void didUpdateWidget(covariant ProfileScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.uid != widget.uid) {
-      profileController.updateUserId(widget.uid);
-    }
-  }
-
   void _showFullScreenProfileImage(BuildContext context, String imageUrl) {
     showDialog(
       context: context,
       builder: (context) => Dialog(
         backgroundColor: Colors.transparent,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            ClipOval(
-              child: CachedNetworkImage(
-                imageUrl: imageUrl,
-                fit: BoxFit.cover,
-                width: MediaQuery.of(context).size.width * 0.8,
-                height: MediaQuery.of(context).size.width * 0.8,
-              ),
-            ),
-          ],
+        child: ClipOval(
+          child: CachedNetworkImage(
+            imageUrl: imageUrl,
+            fit: BoxFit.cover,
+            width: MediaQuery.of(context).size.width * 0.8,
+            height: MediaQuery.of(context).size.width * 0.8,
+          ),
         ),
       ),
     );
@@ -72,174 +55,150 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      if (profileController.user.value.isEmpty) {
-        return const Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
-      }
-
-      return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.black12,
-          leading: widget.showBackButton
-              ? IconButton(
-                  icon: Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () => Navigator.of(context).pop(),
-                )
-              : null,
-          actions: const [Icon(Icons.more_horiz)],
-          title: Text(
-            profileController.user.value['name'] ?? '',
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        title: Obx(() => Text(
+          widget.uid == authController.user.uid
+              ? 'My Profile'
+              : profileController.user['name'] ?? '',
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+        )),
+        actions: [
+          if (widget.uid == authController.user.uid)
+            PopupMenuButton<String>(
+              icon: Icon(Icons.more_vert, color: Colors.white),
+              onSelected: (value) {
+                if (value == 'delete') {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text('Delete Account'),
+                      content: Text('Are you sure you want to delete your account? This action cannot be undone.'),
+                      actions: [
+                        TextButton(
+                          child: Text('Cancel'),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                        TextButton(
+                          child: Text('Delete', style: TextStyle(color: Colors.red)),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            authController.deleteAccount();
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                }
+              },
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                PopupMenuItem<String>(
+                  value: 'delete',
+                  child: ListTile(
+                    leading: Icon(Icons.delete_forever, color: Colors.red),
+                    title: Text('Delete Account', style: TextStyle(color: Colors.red)),
+                  ),
+                ),
+              ],
             ),
-          ),
-          centerTitle: true,
-        ),
-        body: SafeArea(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        _showFullScreenProfileImage(
-                          context,
-                          profileController.user.value['profilePhoto'],
-                        );
-                      },
-                      child: ClipOval(
-                        child: CachedNetworkImage(
-                          fit: BoxFit.cover,
-                          imageUrl:
-                              profileController.user.value['profilePhoto'],
-                          height: 100,
-                          width: 100,
-                          placeholder: (context, url) =>
-                              const CircularProgressIndicator(),
-                          errorWidget: (context, url, error) =>
-                              const Icon(Icons.error),
-                        ),
-                      ),
-                    ),
-                  ],
+        ],
+      ),
+      body: Obx(() {
+        if (profileController.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        return SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              InkWell(
+                onTap: () => _showFullScreenProfileImage(
+                  context,
+                  profileController.user['profilePhoto'] ?? '',
                 ),
-                const SizedBox(height: 15),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Column(
-                      children: [
-                        Text(
-                          profileController.user.value['following'],
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 5),
-                        const Text('Following', style: TextStyle(fontSize: 14)),
-                      ],
-                    ),
-                    Container(
-                      color: Colors.black54,
-                      width: 1,
-                      height: 15,
-                      margin: const EdgeInsets.symmetric(horizontal: 15),
-                    ),
-                    Column(
-                      children: [
-                        Text(
-                          profileController.user.value['followers'],
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 5),
-                        const Text('Followers', style: TextStyle(fontSize: 14)),
-                      ],
-                    ),
-                    Container(
-                      color: Colors.black54,
-                      width: 1,
-                      height: 15,
-                      margin: const EdgeInsets.symmetric(horizontal: 15),
-                    ),
-                    Column(
-                      children: [
-                        Text(
-                          profileController.user.value['likes'],
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 5),
-                        const Text('Likes', style: TextStyle(fontSize: 14)),
-                      ],
-                    ),
-                  ],
+                child: ClipOval(
+                  child: CachedNetworkImage(
+                    imageUrl: profileController.user['profilePhoto'] ?? '',
+                    fit: BoxFit.cover,
+                    height: 100,
+                    width: 100,
+                    placeholder: (context, url) => const CircularProgressIndicator(),
+                    errorWidget: (context, url, error) => const Icon(Icons.error),
+                  ),
                 ),
-                const SizedBox(height: 15),
-                Container(
+              ),
+              const SizedBox(height: 15),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildStatColumn('Following', profileController.user['following'] ?? '0'),
+                  Container(color: Colors.black54, width: 1, height: 15, margin: const EdgeInsets.symmetric(horizontal: 15)),
+                  _buildStatColumn('Followers', profileController.user['followers'] ?? '0'),
+                  Container(color: Colors.black54, width: 1, height: 15, margin: const EdgeInsets.symmetric(horizontal: 15)),
+                  _buildStatColumn('Likes', profileController.user['likes'] ?? '0'),
+                ],
+              ),
+              const SizedBox(height: 15),
+              InkWell(
+                onTap: () {
+                  if (widget.uid == authController.user.uid) {
+                    authController.signOut();
+                  } else {
+                    profileController.followUser();
+                  }
+                },
+                child: Container(
                   width: 140,
                   height: 47,
-                  decoration:
-                      BoxDecoration(border: Border.all(color: Colors.black12)),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black12),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
                   child: Center(
-                    child: InkWell(
-                      onTap: () {
-                        if (widget.uid == authController.user.uid) {
-                          authController.signOut();
-                        } else {
-                          profileController.followUser();
-                        }
-                      },
-                      child: Text(
-                        widget.uid == authController.user.uid
-                            ? 'Sign Out'
-                            : profileController.user.value['isFollowing']
-                                ? 'Unfollow'
-                                : 'Follow',
-                        style: const TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.bold),
-                      ),
+                    child: Text(
+                      widget.uid == authController.user.uid
+                          ? 'Sign Out'
+                          : profileController.user['isFollowing'] ?? false
+                              ? 'Unfollow'
+                              : 'Follow',
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
-                Obx(() {
-                  final userVideos = videoController.getUserVideos(widget.uid);
-                  return GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: userVideos.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 1,
-                      crossAxisSpacing: 5,
-                    ),
-                    itemBuilder: (context, index) {
-                      final video = userVideos[index];
-                      return Stack(
+              ),
+              const SizedBox(height: 20),
+              Obx(() {
+                final userVideos = videoController.getUserVideos(widget.uid);
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: userVideos.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 1,
+                    crossAxisSpacing: 5,
+                    mainAxisSpacing: 5,
+                  ),
+                  itemBuilder: (context, index) {
+                    final video = userVideos[index];
+                    return InkWell(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => UserVideoScreen(
+                              uid: widget.uid,
+                              initialVideoIndex: index,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Stack(
                         fit: StackFit.expand,
                         children: [
-                          InkWell(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => UserVideoScreen(
-                                    uid: widget.uid,
-                                    initialVideoIndex: index,
-                                  ),
-                                ),
-                              );
-                            },
-                            child: CachedNetworkImage(
-                              imageUrl: video.thumbnail,
-                              fit: BoxFit.cover,
-                            ),
+                          CachedNetworkImage(
+                            imageUrl: video.thumbnail,
+                            fit: BoxFit.cover,
                           ),
                           if (widget.uid == authController.user.uid)
                             Positioned(
@@ -247,43 +206,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               right: 5,
                               child: IconButton(
                                 icon: Icon(Icons.delete, color: Colors.white),
-                                onPressed: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      title: Text('Delete Video'),
-                                      content: Text(
-                                          'Are you sure you want to delete this video?'),
-                                      actions: [
-                                        TextButton(
-                                          child: Text('Cancel'),
-                                          onPressed: () =>
-                                              Navigator.of(context).pop(),
-                                        ),
-                                        TextButton(
-                                          child: Text('Delete'),
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                            videoController
-                                                .deleteVideo(video.id);
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
+                                onPressed: () => _showDeleteVideoDialog(video.id),
                               ),
                             ),
                         ],
-                      );
-                    },
-                  );
-                }),
-              ],
-            ),
+                      ),
+                    );
+                  },
+                );
+              }),
+            ],
           ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildStatColumn(String title, String count) {
+    return Column(
+      children: [
+        Text(
+          count,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
-      );
-    });
+        const SizedBox(height: 5),
+        Text(title, style: const TextStyle(fontSize: 14)),
+      ],
+    );
+  }
+
+  void _showDeleteVideoDialog(String videoId) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Delete Video'),
+        content: Text('Are you sure you want to delete this video?'),
+        actions: [
+          TextButton(
+            child: Text('Cancel'),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          TextButton(
+            child: Text('Delete'),
+            onPressed: () {
+              Navigator.of(context).pop();
+              videoController.deleteVideo(videoId);
+            },
+          ),
+        ],
+      ),
+    );
   }
 }
+

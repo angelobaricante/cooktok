@@ -122,4 +122,45 @@ class AuthController extends GetxController {
     // Reset the profile controller
     Get.find<ProfileController>().resetProfile();
   }
+
+  Future<void> deleteAccount() async {
+    try {
+      User? currentUser = firebaseAuth.currentUser;
+      if (currentUser != null) {
+        // Delete user data from Firestore
+        await firestore.collection('users').doc(currentUser.uid).delete();
+
+        // Delete user's videos
+        var videosQuery = await firestore
+            .collection('videos')
+            .where('uid', isEqualTo: currentUser.uid)
+            .get();
+        for (var doc in videosQuery.docs) {
+          await doc.reference.delete();
+        }
+
+        // Delete user's authentication account
+        await currentUser.delete();
+
+        // Sign out the user
+        await signOut();
+
+        Get.snackbar(
+          'Account Deleted',
+          'Your account has been successfully deleted.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+
+        // Navigate to login screen
+        Get.offAll(() => LoginScreen());
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to delete account: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
 }
+

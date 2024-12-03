@@ -111,7 +111,11 @@ class RecipeScreen extends StatelessWidget {
                       ),
                     ),
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Close'),
+                    child: const Text(
+                      'Close',
+                      style: TextStyle(
+                          color: Colors.white), // Change text color to white
+                    ),
                   ),
                 ],
               ),

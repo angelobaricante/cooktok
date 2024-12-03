@@ -117,12 +117,6 @@ class AuthController extends GetxController {
     }
   }
 
-  Future<void> signOut() async {
-    await firebaseAuth.signOut();
-    // Reset the profile controller
-    Get.find<ProfileController>().resetProfile();
-  }
-
   Future<void> deleteAccount() async {
     try {
       User? currentUser = firebaseAuth.currentUser;
@@ -162,5 +156,8 @@ class AuthController extends GetxController {
       );
     }
   }
-}
 
+  Future<void> signOut() async {
+    await firebaseAuth.signOut();
+  }
+}

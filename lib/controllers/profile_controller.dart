@@ -1,102 +1,116 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cooktok/constants.dart';
 import 'package:get/get.dart';
+import 'package:cooktok/controllers/auth_controller.dart';
 
 class ProfileController extends GetxController {
-  final Rx<Map<String, dynamic>> user = Rx<Map<String, dynamic>>({});
-  final RxList<Map<String, dynamic>> savedRecipes =
-      <Map<String, dynamic>>[].obs;
-  Map<String, dynamic> get getUser => user.value;
+  final Rx<Map<String, dynamic>> _user = Rx<Map<String, dynamic>>({});
+  final RxList<Map<String, dynamic>> savedRecipes = <Map<String, dynamic>>[].obs;
+  Map<String, dynamic> get user => _user.value;
 
-  Rx<String> uid = "".obs;
+  final Rx<String> _uid = "".obs;
+  String get uid => _uid.value;
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final AuthController authController = Get.find<AuthController>();
+
+  final RxBool _isLoading = true.obs;
+  bool get isLoading => _isLoading.value;
 
   @override
   void onInit() {
     super.onInit();
-    uid.listen((_) {
+    _uid.listen((_) {
       getUserData();
     });
   }
 
-  updateUserId(String id) {
-    uid.value = id;
+  void updateUserId(String id) {
+    _uid.value = id;
   }
 
   void refreshProfile() {
     updateUserId(authController.user.uid);
   }
 
-  resetProfile() {
-    user.value = {};
+  void resetProfile() {
+    _user.value = {};
     savedRecipes.clear();
-    uid.value = "";
+    _uid.value = "";
   }
 
-  getUserData() async {
-    if (uid.value.isEmpty) return;
-
-    List<String> thumbnails = [];
-    List<String> videoUrls = [];
-
-    var myVideos = await firestore
-        .collection('videos')
-        .where('uid', isEqualTo: uid.value)
-        .get();
-    for (int i = 0; i < myVideos.docs.length; i++) {
-      var videoData = myVideos.docs[i].data() as dynamic;
-      thumbnails.add(videoData['thumbnail']);
-      videoUrls.add(videoData['videoUrl']);
+  Future<void> getUserData() async {
+    _isLoading.value = true;
+    if (_uid.value.isEmpty) {
+      _isLoading.value = false;
+      return;
     }
 
-    DocumentSnapshot userDoc =
-        await firestore.collection('users').doc(uid.value).get();
-    final userData = userDoc.data()! as dynamic;
-    String name = userData['name'];
-    String profilePhoto = userData['profilePhoto'];
-    int likes = 0;
+    try {
+      List<String> thumbnails = [];
+      List<String> videoUrls = [];
 
-    for (var item in myVideos.docs) {
-      likes += (item.data()['likes'] as List).length;
+      var myVideos = await firestore
+          .collection('videos')
+          .where('uid', isEqualTo: _uid.value)
+          .get();
+      for (int i = 0; i < myVideos.docs.length; i++) {
+        var videoData = myVideos.docs[i].data() as dynamic;
+        thumbnails.add(videoData['thumbnail']);
+        videoUrls.add(videoData['videoUrl']);
+      }
+
+      DocumentSnapshot userDoc =
+          await firestore.collection('users').doc(_uid.value).get();
+      final userData = userDoc.data()! as dynamic;
+      String name = userData['name'];
+      String profilePhoto = userData['profilePhoto'];
+      int likes = 0;
+
+      for (var item in myVideos.docs) {
+        likes += (item.data()['likes'] as List).length;
+      }
+
+      var followerDoc = await firestore
+          .collection('users')
+          .doc(_uid.value)
+          .collection('followers')
+          .get();
+      var followingDoc = await firestore
+          .collection('users')
+          .doc(_uid.value)
+          .collection('following')
+          .get();
+      int followers = followerDoc.docs.length;
+      int following = followingDoc.docs.length;
+
+      bool isFollowing = (await firestore
+              .collection('users')
+              .doc(_uid.value)
+              .collection('followers')
+              .doc(authController.user.uid)
+              .get())
+          .exists;
+
+      _user.value = {
+        'followers': followers.toString(),
+        'following': following.toString(),
+        'isFollowing': isFollowing,
+        'likes': likes.toString(),
+        'profilePhoto': profilePhoto,
+        'name': name,
+        'thumbnails': thumbnails,
+        'videoUrls': videoUrls,
+      };
+    } catch (e) {
+      print('Error fetching user data: $e');
+    } finally {
+      _isLoading.value = false;
     }
-
-    var followerDoc = await firestore
-        .collection('users')
-        .doc(uid.value)
-        .collection('followers')
-        .get();
-    var followingDoc = await firestore
-        .collection('users')
-        .doc(uid.value)
-        .collection('following')
-        .get();
-    int followers = followerDoc.docs.length;
-    int following = followingDoc.docs.length;
-
-    bool isFollowing = (await firestore
-            .collection('users')
-            .doc(uid.value)
-            .collection('followers')
-            .doc(authController.user.uid)
-            .get())
-        .exists;
-
-    user.value = {
-      'followers': followers.toString(),
-      'following': following.toString(),
-      'isFollowing': isFollowing,
-      'likes': likes.toString(),
-      'profilePhoto': profilePhoto,
-      'name': name,
-      'thumbnails': thumbnails,
-      'videoUrls': videoUrls,
-    };
     update();
   }
 
-  followUser() async {
+  Future<void> followUser() async {
     final currentUserId = authController.user.uid;
-    final targetUserId = uid.value;
+    final targetUserId = _uid.value;
 
     var doc = await firestore
         .collection('users')
@@ -118,7 +132,7 @@ class ProfileController extends GetxController {
           .collection('following')
           .doc(targetUserId)
           .set({});
-      user.value
+      _user.value
           .update('followers', (value) => (int.parse(value) + 1).toString());
     } else {
       await firestore
@@ -133,19 +147,19 @@ class ProfileController extends GetxController {
           .collection('following')
           .doc(targetUserId)
           .delete();
-      user.value
+      _user.value
           .update('followers', (value) => (int.parse(value) - 1).toString());
     }
 
-    user.value.update('isFollowing', (value) => !value);
+    _user.value.update('isFollowing', (value) => !value);
     update();
   }
 
   List<String> getUserVideos() {
-    return user.value['videoUrls'] ?? [];
+    return _user.value['videoUrls'] ?? [];
   }
 
-  void saveRecipe(
+  Future<void> saveRecipe(
       String recipeId, String recipeTitle, String recipeContent) async {
     final currentUserId = authController.user.uid;
     final recipeDoc = firestore
@@ -165,13 +179,13 @@ class ProfileController extends GetxController {
         'recipeId': recipeId,
       });
       print('Recipe saved successfully');
-      fetchSavedRecipes();
+      await fetchSavedRecipes();
     } else {
       print('Recipe already saved');
     }
   }
 
-  void fetchSavedRecipes() async {
+  Future<void> fetchSavedRecipes() async {
     try {
       final currentUserId = authController.user.uid;
       print('Fetching saved recipes for user: $currentUserId');
@@ -197,7 +211,7 @@ class ProfileController extends GetxController {
     return savedRecipes.any((recipe) => recipe['recipeId'] == recipeId);
   }
 
-  void removeRecipe(String recipeId) async {
+  Future<void> removeRecipe(String recipeId) async {
     final currentUserId = authController.user.uid;
     final recipeDoc = firestore
         .collection('users')
@@ -209,6 +223,6 @@ class ProfileController extends GetxController {
 
     await recipeDoc.delete();
     print('Recipe removed successfully');
-    fetchSavedRecipes();
+    await fetchSavedRecipes();
   }
 }

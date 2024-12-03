@@ -1,4 +1,5 @@
 import 'package:cooktok/views/screens/recipe_detail_screen.dart';
+import 'package:cooktok/views/screens/recipe_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:cooktok/controllers/profile_controller.dart';
@@ -30,18 +31,15 @@ class SavedRecipesScreen extends StatelessWidget {
               child: ListTile(
                 title: Text(recipe['recipeTitle'] ?? 'No Title'),
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => RecipeDetailScreen(
-                        recipe: {
-                          'recipeTitle': recipe['recipeTitle'] ?? 'No Title',
-                          'recipeContent':
-                              recipe['recipeContent'] ?? 'No Content',
-                          // Add other fields as necessary
-                        },
-                      ),
-                    ),
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return RecipeScreen(
+                        recipeTitle: recipe['recipeTitle'] ?? 'No Title',
+                        recipeContent: recipe['recipeContent'] ?? 'No Content',
+                        recipeId: recipe['recipeId'] ?? '',
+                      );
+                    },
                   );
                 },
               ),

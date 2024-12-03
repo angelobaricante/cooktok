@@ -85,14 +85,32 @@ class AuthController extends GetxController {
             .set(user.toJson());
       } else {
         Get.snackbar(
-          'Error Creating Account',
-          'Please enter all the fields',
+          'Registration Failed',
+          'Please fill in all fields and select a profile picture',
+          backgroundColor: Colors.red[100],
+          colorText: Colors.red[900],
         );
       }
-    } catch (e) {
+    } on FirebaseAuthException catch (e) {
+      String message = '';
+      switch (e.code) {
+        case 'email-already-in-use':
+          message = 'An account already exists with this email';
+          break;
+        case 'invalid-email':
+          message = 'Please enter a valid email address';
+          break;
+        case 'weak-password':
+          message = 'Password should be at least 6 characters long';
+          break;
+        default:
+          message = 'Failed to create account. Please try again';
+      }
       Get.snackbar(
-        'Error Creating Account',
-        e.toString(),
+        'Registration Failed',
+        message,
+        backgroundColor: Colors.red[100],
+        colorText: Colors.red[900],
       );
     }
   }
@@ -100,19 +118,72 @@ class AuthController extends GetxController {
   void loginUser(String email, String password) async {
     try {
       if (email.isNotEmpty && password.isNotEmpty) {
-        await firebaseAuth.signInWithEmailAndPassword(
+        // First authenticate with Firebase Auth
+        UserCredential userCred = await firebaseAuth.signInWithEmailAndPassword(
             email: email, password: password);
-        print('log success');
+
+        // Then verify if user exists in Firestore
+        var userDoc =
+            await firestore.collection('users').doc(userCred.user!.uid).get();
+        if (!userDoc.exists) {
+          await firebaseAuth.signOut();
+          Get.snackbar(
+            'Account Not Found',
+            'No account found with these credentials. Please register first.',
+            backgroundColor: Colors.red[100],
+            colorText: Colors.red[900],
+          );
+          return;
+        }
       } else {
         Get.snackbar(
-          'Error Logging in',
-          'Please enter all the fields',
+          'Login Failed',
+          'Please fill in both email and password',
+          backgroundColor: Colors.red[100],
+          colorText: Colors.red[900],
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      print('Firebase Auth Error Code: ${e.code}'); // Debug log
+      print('Firebase Auth Error Message: ${e.message}'); // Debug log
+
+      if (e.code == 'invalid-email') {
+        Get.snackbar(
+          'Login Failed',
+          'Please enter a valid email address',
+          backgroundColor: Colors.red[100],
+          colorText: Colors.red[900],
+        );
+      } else if (e.code == 'user-disabled') {
+        Get.snackbar(
+          'Login Failed',
+          'This account has been disabled',
+          backgroundColor: Colors.red[100],
+          colorText: Colors.red[900],
+        );
+      } else if (e.code == 'too-many-requests') {
+        Get.snackbar(
+          'Login Failed',
+          'Too many failed attempts. Please try again later',
+          backgroundColor: Colors.red[100],
+          colorText: Colors.red[900],
+        );
+      } else {
+        // For wrong-password, user-not-found, and other credential errors
+        Get.snackbar(
+          'Login Failed',
+          'Invalid login details. Please check your email and password',
+          backgroundColor: Colors.red[100],
+          colorText: Colors.red[900],
         );
       }
     } catch (e) {
+      print('Unexpected Error: $e'); // Debug log
       Get.snackbar(
-        'Error Logging in',
-        e.toString(),
+        'Login Failed',
+        'An unexpected error occurred',
+        backgroundColor: Colors.red[100],
+        colorText: Colors.red[900],
       );
     }
   }
@@ -140,18 +211,29 @@ class AuthController extends GetxController {
         await signOut();
 
         Get.snackbar(
-          'Account Deleted',
-          'Your account has been successfully deleted.',
+          'Success',
+          'Your account has been successfully deleted',
+          backgroundColor: Colors.green[100],
+          colorText: Colors.green[900],
           snackPosition: SnackPosition.BOTTOM,
         );
 
-        // Navigate to login screen
         Get.offAll(() => LoginScreen());
       }
-    } catch (e) {
+    } on FirebaseAuthException catch (e) {
+      String message = '';
+      switch (e.code) {
+        case 'requires-recent-login':
+          message = 'Please log in again before deleting your account';
+          break;
+        default:
+          message = 'Failed to delete account. Please try again';
+      }
       Get.snackbar(
         'Error',
-        'Failed to delete account: ${e.toString()}',
+        message,
+        backgroundColor: Colors.red[100],
+        colorText: Colors.red[900],
         snackPosition: SnackPosition.BOTTOM,
       );
     }
